@@ -1,0 +1,9 @@
+[project]
+name = "encoder"
+version = "0.1.0"
+description = "MLX week 3 encoder part"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+[tool.uv]
+package = true
