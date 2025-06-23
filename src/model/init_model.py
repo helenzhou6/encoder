@@ -16,7 +16,3 @@ class MNISTModel(nn.Module):
         )
     def forward(self, x: Tensor):
         return self.layer_stack(x)
-    
-
-
-
