@@ -2,10 +2,18 @@ from torch import nn
 from torchvision import datasets
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
+from torchmetrics import classification, Accuracy
+from torch import nn, optim
 
-EMBEDDING_DIM = 64
+from utils import get_device
+from init_model import SingleHeadAttentionModel
+
 PATCH_SIZE = 7
+EMBEDDING_DIM = PATCH_SIZE * PATCH_SIZE
 BATCH_SIZE = 32
+EPOCHS = 5
+LEARNING_RATE = 0.1
+device = get_device()
 
 linear_proj = nn.Linear(PATCH_SIZE * PATCH_SIZE, EMBEDDING_DIM)
 
@@ -27,11 +35,40 @@ train_data = datasets.MNIST(
     target_transform=None
 )
 
-
 train_dataloader = DataLoader(train_data,
     batch_size=BATCH_SIZE,
     shuffle=True
 )
 
-for _, (batch_images, _) in enumerate(train_dataloader):
-    print(batch_images.shape)
+NUM_CATEGORIES = len(train_data.classes)
+
+# for _, (batch_images, _) in enumerate(train_dataloader):
+#     print(batch_images.shape) # Is 
+
+model = SingleHeadAttentionModel(NUM_CATEGORIES, dim_k=49).to(device)
+
+accuracy_fn = Accuracy(task = 'multiclass', num_classes=NUM_CATEGORIES).to(device)
+loss_fn = nn.CrossEntropyLoss()
+model_optimizer = optim.SGD(params=model.parameters(), lr=LEARNING_RATE)
+
+def train_model():
+    for epoch in range(EPOCHS):
+        print(f"---------\nTraining: Epoch {epoch + 1} out of {EPOCHS} ---------")
+        train_loss, train_acc = 0, 0
+        # y = classification
+        for _, (batch_images, actual_y) in enumerate(train_dataloader):
+            # batch_images is [32, 16, 64]
+            model.train()
+            (y_pred, _) = model(batch_images)
+            loss = loss_fn(y_pred, actual_y)
+            train_loss += loss 
+            train_acc += accuracy_fn(y_pred.argmax(dim=1), actual_y)
+            model_optimizer.zero_grad()
+            loss.backward()
+            model_optimizer.step()
+
+        train_loss /= len(train_dataloader)
+        train_acc /= len(train_dataloader)
+        print(f"Train loss: {train_loss:.5f} | Train accuracy: {(train_acc*100):.2f}%")
+
+train_model()
