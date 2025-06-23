@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "MLX week 3 encoder part"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "torch==2.2.2",
+]
 [tool.uv]
 package = true
