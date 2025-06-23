@@ -5,6 +5,7 @@ description = "MLX week 3 encoder part"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "datasets>=3.6.0",
     "torch==2.2.2",
 ]
 [tool.uv]
