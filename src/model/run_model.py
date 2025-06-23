@@ -40,20 +40,28 @@ accuracy_fn = Accuracy(task = 'multiclass', num_classes=classification_num).to(d
 loss_fn = nn.CrossEntropyLoss()
 model_optimizer = optim.SGD(params=model.parameters(), lr=LEARNING_RATE)
 
-for epoch in range(EPOCHS):
-    print(f"---------\nTraining: Epoch {epoch + 1} out of {EPOCHS} ---------")
-    train_loss, train_acc = 0, 0
-    # y = classification
-    for _, (image, actual_y) in enumerate(train_dataloader):
-        model.train()
-        y_pred = model(image)
-        loss = loss_fn(y_pred, actual_y)
-        train_loss += loss 
-        train_acc += accuracy_fn(y_pred.argmax(dim=1), actual_y)
-        model_optimizer.zero_grad()
-        loss.backward()
-        model_optimizer.step()
+# -- TRAINING --
 
-    train_loss /= len(train_dataloader)
-    train_acc /= len(train_dataloader)
-    print(f"Train loss: {train_loss:.5f} | Train accuracy: {(train_acc*100):.2f}%")
+def train_model():
+    for epoch in range(EPOCHS):
+        print(f"---------\nTraining: Epoch {epoch + 1} out of {EPOCHS} ---------")
+        train_loss, train_acc = 0, 0
+        # y = classification
+        for _, (image, actual_y) in enumerate(train_dataloader):
+            model.train()
+            y_pred = model(image)
+            loss = loss_fn(y_pred, actual_y)
+            train_loss += loss 
+            train_acc += accuracy_fn(y_pred.argmax(dim=1), actual_y)
+            model_optimizer.zero_grad()
+            loss.backward()
+            model_optimizer.step()
+
+        train_loss /= len(train_dataloader)
+        train_acc /= len(train_dataloader)
+        print(f"Train loss: {train_loss:.5f} | Train accuracy: {(train_acc*100):.2f}%")
+
+    save(model.state_dict(), 'model.pth')
+
+# RUN below to train it
+# train_model()
