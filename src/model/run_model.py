@@ -4,8 +4,9 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from torchmetrics import Accuracy
 from torch import nn, optim, save
+import wandb
 
-from utils import get_device, init_wandb
+from utils import get_device, init_wandb, save_artifact
 from init_model import SingleHeadAttentionModel
 
 PATCH_SIZE = 7
@@ -52,7 +53,7 @@ model_optimizer = optim.SGD(params=model.parameters(), lr=LEARNING_RATE)
 
 def train_model():
     for epoch in range(EPOCHS):
-        print(f"---------\nTraining: Epoch {epoch + 1} out of {EPOCHS} ---------")
+        print(f"----\nTraining: Epoch {epoch + 1} out of {EPOCHS} ----")
         train_loss, train_acc = 0, 0
         # y = classification
         for _, (batch_images, actual_y) in enumerate(train_dataloader):
@@ -71,8 +72,14 @@ def train_model():
         print(f"Train loss: {train_loss:.5f} | Train accuracy: {(train_acc*100):.2f}%")
         wandb_run.log({"acc": train_acc*100, "loss": train_loss})
 
-    save(model.state_dict(), 'model.pth')
+    model_path = "data/SingleHeadAttentionModel.pt"
+    model_state = model.state_dict()
+    save(model_state, model_path)
+    save_artifact(
+        "SingleHeadAttentionModel",
+        "SingleHeadAttentionModel"
+    )
 
-# RUN below to train it
-# train_model()
+# Uncomment below to train it
+train_model()
 wandb_run.finish()
