@@ -4,12 +4,16 @@ from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
 from torch import nn, optim, inference_mode, save
 from torchmetrics import classification, Accuracy
+import wandb
 from init_model import MNISTModel
+from utils import init_wandb
 
 device="cpu"
 BATCH_SIZE = 32
 EPOCHS = 5
-LEARNING_RATE =0.1
+LEARNING_RATE = 0.1
+
+run = init_wandb()
 
 class_names = datasets.MNIST(
     root="data",
@@ -60,8 +64,10 @@ def train_model():
         train_loss /= len(train_dataloader)
         train_acc /= len(train_dataloader)
         print(f"Train loss: {train_loss:.5f} | Train accuracy: {(train_acc*100):.2f}%")
+        run.log({"acc": train_acc*100, "loss": train_loss})
 
     save(model.state_dict(), 'model.pth')
 
 # RUN below to train it
-# train_model()
+train_model()
+run.finish()
