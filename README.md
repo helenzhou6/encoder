@@ -11,4 +11,5 @@ Takes in 28 pixel x 28 pixel image and predicts the digit (0 to 9)
 
 ## Code
 1. Run `run_model.py` that will create the model 
-2. `eval_model.py` will evaluate the model and check the loss and accuracy. Also see wandb graphs.
+2. `eval_model.py` will evaluate the model and check the loss and accuracy. Also see wandb graphs. 
+    - Run `wandb_login` in the terminal to enable wandb
