@@ -1,6 +1,5 @@
 
-from torch import nn, Tensor, manual_seed, load
-from torchvision import datasets
+from torch import nn, Tensor, manual_seed
 
 manual_seed(42)
 class MNISTModel(nn.Module):
