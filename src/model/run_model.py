@@ -7,7 +7,7 @@ from torch import nn, optim, save
 
 from plot_attention import visualise_attention
 from utils import get_device, init_wandb, save_artifact
-from init_model import SingleHeadAttentionModel
+from init_model import MultiHeadAttentionModel
 
 PATCH_SIZE = 7
 EMBEDDING_DIM = PATCH_SIZE * PATCH_SIZE
@@ -16,6 +16,7 @@ BATCH_SIZE = 32
 EPOCHS = 5
 LEARNING_RATE = 0.1
 DIMENSION_K = 32
+NUM_HEADS = 1
 
 device = get_device()
 wandb_run = init_wandb()
@@ -44,7 +45,7 @@ train_dataloader = DataLoader(train_data,
 )
 
 NUM_CATEGORIES = len(train_data.classes)
-model = SingleHeadAttentionModel(output_shape=NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_input=EMBEDDING_DIM, dim_k=DIMENSION_K).to(device)
+model = MultiHeadAttentionModel(output_shape=NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_input=EMBEDDING_DIM, dim_k=DIMENSION_K, num_heads=NUM_HEADS).to(device)
 
 accuracy_fn = Accuracy(task = 'multiclass', num_classes=NUM_CATEGORIES).to(device)
 loss_fn = nn.CrossEntropyLoss()
@@ -74,12 +75,12 @@ def train_model():
         print(f"Train loss: {train_loss:.5f} | Train accuracy: {(train_acc*100):.2f}%")
         wandb_run.log({"acc": train_acc*100, "loss": train_loss})
 
-    model_path = "data/SingleHeadAttentionModel.pt"
+    model_path = "data/MultiHeadAttentionModel.pt"
     model_state = model.state_dict()
     save(model_state, model_path)
     save_artifact(
-        "SingleHeadAttentionModel",
-        "SingleHeadAttentionModel"
+        "MultiHeadAttentionModel",
+        "Multi headed attention model"
     )
 
 # Uncomment below to train it

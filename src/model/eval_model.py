@@ -6,7 +6,7 @@ from torchmetrics import Accuracy
 from torch.utils.data import DataLoader
 
 from utils import get_device, load_artifact_path, init_wandb
-from init_model import SingleHeadAttentionModel
+from init_model import MultiHeadAttentionModel
 from run_model import NUM_CATEGORIES, patch_image
 
 PATCH_SIZE = 7
@@ -15,12 +15,13 @@ NUM_PATCHES = 16
 BATCH_SIZE = 32
 # Query and key vectors are projected into a lower-dimensional space (i.e., dim_k < input_dim) for efficiency and generalization.
 DIMENSION_K = 32
+NUM_HEADS = 1
 
 device = get_device()
 # TO RUN: make sure train_model() is commented out in run_model.py
 
 init_wandb()
-model_path = load_artifact_path("SingleHeadAttentionModel")
+model_path = load_artifact_path("MultiHeadAttentionModel")
 print(model_path)
 
 transform_image = transforms.Compose([
@@ -41,7 +42,7 @@ test_dataloader = DataLoader(test_data,
 
 if os.path.exists(model_path):
     print(f"{model_path} exists, loading model state...")
-    model = SingleHeadAttentionModel(output_shape=NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_input=EMBEDDING_DIM, dim_k=DIMENSION_K).to(device)
+    model = MultiHeadAttentionModel(output_shape=NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_input=EMBEDDING_DIM, dim_k=DIMENSION_K, num_heads=NUM_HEADS).to(device)
     model.load_state_dict(load(model_path))
 else:
     print(f"{model_path} does not exist - please run run_model.py to create...")
