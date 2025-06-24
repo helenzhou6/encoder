@@ -5,6 +5,7 @@ import torchvision.transforms as transforms
 from torchmetrics import Accuracy
 from torch import nn, optim, save
 
+from plot_attention import visualise_attention
 from utils import get_device, init_wandb, save_artifact
 from init_model import SingleHeadAttentionModel
 
@@ -53,16 +54,19 @@ def train_model():
         print(f"----\nTraining: Epoch {epoch + 1} out of {EPOCHS} ----")
         train_loss, train_acc = 0, 0
         # y = classification
-        for _, (batch_images, actual_y) in enumerate(train_dataloader):
+        for batch_idx, (batch_images, actual_y) in enumerate(train_dataloader):
             # batch_images is [32, 16, 49]
             model.train()
-            (y_pred, _) = model(batch_images)
+            (y_pred, attention_weights) = model(batch_images)
             loss = loss_fn(y_pred, actual_y)
             train_loss += loss 
             train_acc += accuracy_fn(y_pred.argmax(dim=1), actual_y)
             model_optimizer.zero_grad()
             loss.backward()
             model_optimizer.step()
+            if batch_idx == 0:
+                # Only first patch to reduce noise
+                visualise_attention(attention_weights, step=epoch)
 
         train_loss /= len(train_dataloader)
         train_acc /= len(train_dataloader)
