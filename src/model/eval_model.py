@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 from torchmetrics import Accuracy
 from torch.utils.data import DataLoader
 
-from utils import get_device
+from utils import get_device, load_artifact_path, init_wandb
 from init_model import SingleHeadAttentionModel
 from run_model import NUM_CATEGORIES, patch_image
 
@@ -15,8 +15,10 @@ NUM_PATCHES = 16
 BATCH_SIZE = 32
 
 device = get_device()
-# TODO: FIX THE BELOW - download from wandb and run
-model_pth_path = 'data/SingleHeadAttentionModel.pth'
+
+init_wandb()
+model_path = load_artifact_path("SingleHeadAttentionModel")
+print(model_path)
 
 transform_image = transforms.Compose([
     transforms.ToTensor(),
@@ -34,12 +36,12 @@ test_dataloader = DataLoader(test_data,
     shuffle=False
 )
 
-if os.path.exists(model_pth_path):
-    print(f"{model_pth_path} exists, loading model state...")
+if os.path.exists(model_path):
+    print(f"{model_path} exists, loading model state...")
     model = SingleHeadAttentionModel(NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_k=EMBEDDING_DIM).to(device)
-    model.load_state_dict(load(model_pth_path), map_location=device)
+    model.load_state_dict(load(model_path))
 else:
-    print(f"{model_pth_path} does not exist - please run run_model.py to create...")
+    print(f"{model_path} does not exist - please run run_model.py to create...")
 
 loss_fn = nn.CrossEntropyLoss()
 accuracy_fn = Accuracy(task = 'multiclass', num_classes=NUM_CATEGORIES).to(device)
@@ -57,6 +59,6 @@ with inference_mode():
     model_results_accuracy = (acc*100)
     
 if model_results_loss > 0.5 or model_results_accuracy < 90:
-    raise Exception(f"Machine learning model not usable - since model_loss was > 0.5 at {model_results_loss} and accuracy was < 90 at f{model_results_accuracy:.2f}%")
+    raise Exception(f"Machine learning model not usable - since model_loss was > 0.5 at {model_results_loss} and accuracy was < 90 at {model_results_accuracy:.2f}%")
 else:
     print(f"Model passed evaluation: model loss {model_results_loss} & {model_results_accuracy:.2f}%")
