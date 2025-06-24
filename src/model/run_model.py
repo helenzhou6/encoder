@@ -57,7 +57,7 @@ def train_model():
         train_loss, train_acc = 0, 0
         # y = classification
         for _, (batch_images, actual_y) in enumerate(train_dataloader):
-            # batch_images is [32, 16, 64]
+            # batch_images is [32, 16, 49]
             model.train()
             (y_pred, _) = model(batch_images)
             loss = loss_fn(y_pred, actual_y)
