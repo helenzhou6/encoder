@@ -22,3 +22,7 @@ Takes in 28 pixel x 28 pixel image and predicts the digit (0 to 9)
 1. Add the positional embedding - see ViT transformers (using cosine similarity)
 2. Make multiple encoder blocks
 3. Sweeps - check best hyperparams
+
+## Design choices
+- There are different ways of writing the projections etc - see https://github.com/besarthoxhaj/attention/tree/main - but for readability opted for the simple one
+- You can use sinusiodal (cosine) positional embeddings that adds a fixed param VS leaned positional embeddings (see inside the class). The latter was chosen since good for fixed length vision tasks 

@@ -27,14 +27,17 @@ class SingleHeadAttentionModel(nn.Module):
         self.val_proj = nn.Linear(49, dim_k, bias=False)
         self.dim_k = dim_k
         self.num_patches = num_patches
+
+        # Learnable positional embedding (one per patch)
+        # -- nn.Parameter = tensor treated as learnable param, torch.zeros(1, num_patches, dim_k) = creates a tensor (a multi-dimensional array) filled with zeros.
+        self.position_patch_embed = nn.Parameter(torch.zeros(1, num_patches, dim_k))
         # TODO: REMOVE BELOW when we link it will the decoder
         self.classifier = nn.Linear(dim_k, output_shape)
 
     def forward(self, x):
-        # self.pos_embed = nn.Parameter(torch.zeros(1, self.num_patches + 1, self.dim_k))  # +1 for class token
-        # x = patch_embeddings + self.pos_embed
-
-        # Can't mat1 and mat2 shapes cannot be multiplied (512x64 and 49x49)
+        # Add positional embedding (1, num_patches, dim_k) to patch embeddings - see above
+        x = x + self.position_patch_embed # Shape is (batch_size, num_patches, dim_k)
+        # Matrices
         Q = self.query_proj(x)  # Queries - shape (batch_size, num_patches, dim_k). Each row is query vector for a patch
         K = self.key_proj(x)  # Keys - shape (batch_size, num_patches, dim_k). Each row is a key vector for a patch
         V = self.val_proj(x)  # Values
