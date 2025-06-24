@@ -18,6 +18,7 @@ device = get_device()
 
 wandb_run = init_wandb()
 
+# -- Chop image into patches
 linear_proj = nn.Linear(PATCH_SIZE * PATCH_SIZE, EMBEDDING_DIM)
 
 def patch_image(image): # image = [1, 28, 28]
@@ -29,7 +30,7 @@ transform_image = transforms.Compose([
     transforms.ToTensor(),
     transforms.Lambda(patch_image)
 ])
-    
+
 train_data = datasets.MNIST(
     root="data",
     train=True,
@@ -45,7 +46,7 @@ train_dataloader = DataLoader(train_data,
 
 NUM_CATEGORIES = len(train_data.classes)
 
-model = SingleHeadAttentionModel(NUM_CATEGORIES, dim_k=49).to(device)
+model = SingleHeadAttentionModel(NUM_CATEGORIES, dim_k=EMBEDDING_DIM).to(device)
 
 accuracy_fn = Accuracy(task = 'multiclass', num_classes=NUM_CATEGORIES).to(device)
 loss_fn = nn.CrossEntropyLoss()
