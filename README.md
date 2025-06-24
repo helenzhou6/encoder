@@ -21,7 +21,10 @@ Takes in 28 pixel x 28 pixel image and predicts the digit (0 to 9)
 ## To Do
 1. ✅ Add the positional embedding
 2. Make multiple encoder blocks
-3. Sweeps - check best hyperparams
+3. Add decoder
+4. Train with multiple numbers
+5. Sweeps - check best hyperparams & also upload attention maps wandb
+6. Frontend / inference
 
 ## Design choices
 - There are different ways of writing the projections etc - see https://github.com/besarthoxhaj/attention/tree/main - but for readability opted for the simple one

@@ -59,7 +59,7 @@ class SingleHeadAttentionModel(nn.Module):
 
         # 3a. Apply softmax to turn scores to probabilities 
         normalised_attention = torch.softmax(attention, dim=-1) # -1 = last dimension (applied across the rows)
-        visualise_attention(normalised_attention)
+        # visualise_attention(normalised_attention)
 
         # 4. Apply attention weights to the values (i.e. vector) to get final output
         hidden_v_representation = torch.matmul(normalised_attention, V)
