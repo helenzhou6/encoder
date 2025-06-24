@@ -22,7 +22,6 @@ device = get_device()
 
 init_wandb()
 model_path = load_artifact_path("MultiHeadAttentionModel")
-print(model_path)
 
 transform_image = transforms.Compose([
     transforms.ToTensor(),

@@ -16,7 +16,7 @@ BATCH_SIZE = 32
 EPOCHS = 5
 LEARNING_RATE = 0.1
 DIMENSION_K = 32
-NUM_HEADS = 1
+NUM_HEADS = 2
 
 device = get_device()
 wandb_run = init_wandb()
