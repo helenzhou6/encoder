@@ -4,7 +4,6 @@ from torchvision import datasets
 import torchvision.transforms as transforms
 from torchmetrics import Accuracy
 from torch.utils.data import DataLoader
-from torchvision.transforms import ToTensor
 
 from utils import get_device
 from init_model import SingleHeadAttentionModel
@@ -16,7 +15,8 @@ NUM_PATCHES = 16
 BATCH_SIZE = 32
 
 device = get_device()
-model_pth_path = 'model.pth'
+# TODO: FIX THE BELOW - download from wandb and run
+model_pth_path = 'data/SingleHeadAttentionModel.pth'
 
 transform_image = transforms.Compose([
     transforms.ToTensor(),
@@ -35,11 +35,11 @@ test_dataloader = DataLoader(test_data,
 )
 
 if os.path.exists(model_pth_path):
-    print("model.pth exists, loading model state...")
+    print(f"{model_pth_path} exists, loading model state...")
     model = SingleHeadAttentionModel(NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_k=EMBEDDING_DIM).to(device)
-    model.load_state_dict(load('model.pth'))
+    model.load_state_dict(load(model_pth_path), map_location=device)
 else:
-    print("model.pth does not exist - please run run_model.py to create...")
+    print(f"{model_pth_path} does not exist - please run run_model.py to create...")
 
 loss_fn = nn.CrossEntropyLoss()
 accuracy_fn = Accuracy(task = 'multiclass', num_classes=NUM_CATEGORIES).to(device)

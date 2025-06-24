@@ -12,7 +12,7 @@ PATCH_SIZE = 7
 EMBEDDING_DIM = PATCH_SIZE * PATCH_SIZE
 NUM_PATCHES = 16
 BATCH_SIZE = 32
-EPOCHS = 5
+EPOCHS = 1
 LEARNING_RATE = 0.1
 
 device = get_device()
@@ -78,5 +78,5 @@ def train_model():
     )
 
 # Uncomment below to train it
-train_model()
+# train_model()
 wandb_run.finish()
