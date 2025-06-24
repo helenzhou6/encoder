@@ -78,5 +78,5 @@ def train_model():
     )
 
 # Uncomment below to train it
-# train_model()
+train_model()
 wandb_run.finish()

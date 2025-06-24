@@ -13,7 +13,7 @@ def visualise_attention(normalised_attention):
 
     plt.figure(figsize=(6, 6))
     plt.matshow(attention_matrix, cmap='viridis', fignum=1)
-    plt.title("Attention map - how much each query token attends to each key token")
+    plt.title("Attention map")
     plt.xlabel("One Key patch")
     plt.ylabel("One Query patch") 
     plt.colorbar()
@@ -51,10 +51,11 @@ class SingleHeadAttentionModel(nn.Module):
         sq_root_dim = (self.dim_k ** 0.5)
         attention = dot_product_keys_queries / sq_root_dim # (batch_size, num_patch, num_patch)
 
+        # TODO: Add to the decoder
         # 3b(optional). Add mask to prevent "looking ahead" - mask fills the upper triangle of matrix multiplication with -inf, so softmax turns those into zero.
         # - torch.ones creates a matrix of 1s, size (num_patches x num_patches), tril sets upper triangle to 0 (rest are 1), ==0 converts to Boolean (True = future positions to mask), .masked_fill - where mask is True, replces the value with -inf
-        mask = torch.tril(torch.ones(self.num_patches, self.num_patches)) == 0
-        attention = attention.masked_fill(mask, -float('inf'))
+        # mask = torch.tril(torch.ones(self.num_patches, self.num_patches)) == 0
+        # attention = attention.masked_fill(mask, -float('inf'))
 
         # 3a. Apply softmax to turn scores to probabilities 
         normalised_attention = torch.softmax(attention, dim=-1) # -1 = last dimension (applied across the rows)
