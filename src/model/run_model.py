@@ -4,7 +4,6 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from torchmetrics import Accuracy
 from torch import nn, optim, save
-import wandb
 
 from utils import get_device, init_wandb, save_artifact
 from init_model import SingleHeadAttentionModel
