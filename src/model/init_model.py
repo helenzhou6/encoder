@@ -15,15 +15,20 @@ class SingleHeadAttentionModel(nn.Module):
 
     def forward(self, x):
         # Can't mat1 and mat2 shapes cannot be multiplied (512x64 and 49x49)
-        Q = self.query_proj(x)  # Queries
-        K = self.key_proj(x)  # Keys
+        Q = self.query_proj(x)  # Queries - shape (batch_size, num_patches, dim_k). Each row is query vector for a patch
+        K = self.key_proj(x)  # Keys - shape (batch_size, num_patches, dim_k). Each row is a key vector for a patch
         V = self.val_proj(x)  # Values
         
         # OVERALL: Calculates how much attention each patch should pay to every other patch
-        dot_product_keys_queries = torch.matmul(Q, K.transpose(-2, -1)) # (batch_size, num_patch, num_patch) -- same code = qry @ key.transpose(-1, -2)
-        sq_root_dim = (self.dim_k ** 0.5) # Mathematical stability so values not too large
+        # -- by comparing the query (Q) of each patch to the keys (K) of all other patches.
+        # 1. Applies dot product of queries and keys (same code as qry @ key.transpose(-1, -2)). Transpose flips axis to (batch_size, dim_k, num_patches) so dot product/matrix multiplication can be applied
+        dot_product_keys_queries = torch.matmul(Q, K.transpose(-2, -1)) # (batch_size, num_patch, num_patch)
+        # 2. Divide by square root of dimensin of K for Mathematical stability so attention is not skewed because of size of embeddings
+        sq_root_dim = (self.dim_k ** 0.5)
         attention = dot_product_keys_queries / sq_root_dim
+        # 3. Apply softmax to turn scores to probabilities
         normalised_attention = torch.nn.functional.softmax(attention, dim=-1) # -1 = last dimension (applied across the rows)
+        # 4. Apply attention weights to the values (i.e. vector) to get final output
         hidden_v_representation = torch.matmul(normalised_attention, V)
         # TODO: add output x W = H as last step
 
