@@ -17,3 +17,8 @@ Takes in 28 pixel x 28 pixel image and predicts the digit (0 to 9)
     - Run `wandb_login` in the terminal to enable wandb
     - This includes the Linear projection of flattened patches
 3. `eval_model.py` will evaluate the model and check the loss and accuracy.
+
+## To Do
+1. Add the positional embedding - see ViT transformers (using cosine similarity)
+2. Make multiple encoder blocks
+3. Sweeps - check best hyperparams
