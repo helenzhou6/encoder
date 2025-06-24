@@ -10,21 +10,20 @@ from init_model import SingleHeadAttentionModel
 
 PATCH_SIZE = 7
 EMBEDDING_DIM = PATCH_SIZE * PATCH_SIZE
+NUM_PATCHES = 16
 BATCH_SIZE = 32
 EPOCHS = 5
 LEARNING_RATE = 0.1
-device = get_device()
 
+device = get_device()
 wandb_run = init_wandb()
 
 # -- Chop image into patches
 linear_proj = nn.Linear(PATCH_SIZE * PATCH_SIZE, EMBEDDING_DIM)
-
 def patch_image(image): # image = [1, 28, 28]
     patches = image.unfold(1, PATCH_SIZE, PATCH_SIZE).unfold(2, PATCH_SIZE, PATCH_SIZE)
     patches = patches.contiguous().view(-1, PATCH_SIZE * PATCH_SIZE) 
     return linear_proj(patches)
-
 transform_image = transforms.Compose([
     transforms.ToTensor(),
     transforms.Lambda(patch_image)
@@ -37,15 +36,13 @@ train_data = datasets.MNIST(
     transform=transform_image,
     target_transform=None
 )
-
 train_dataloader = DataLoader(train_data,
     batch_size=BATCH_SIZE,
     shuffle=True
 )
 
 NUM_CATEGORIES = len(train_data.classes)
-
-model = SingleHeadAttentionModel(NUM_CATEGORIES, dim_k=EMBEDDING_DIM).to(device)
+model = SingleHeadAttentionModel(output_shape=NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_k=EMBEDDING_DIM).to(device)
 
 accuracy_fn = Accuracy(task = 'multiclass', num_classes=NUM_CATEGORIES).to(device)
 loss_fn = nn.CrossEntropyLoss()

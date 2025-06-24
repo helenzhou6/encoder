@@ -10,9 +10,13 @@ from utils import get_device
 from init_model import SingleHeadAttentionModel
 from run_model import NUM_CATEGORIES, patch_image
 
+PATCH_SIZE = 7
+EMBEDDING_DIM = PATCH_SIZE * PATCH_SIZE
+NUM_PATCHES = 16
+BATCH_SIZE = 32
+
 device = get_device()
 model_pth_path = 'model.pth'
-BATCH_SIZE = 32
 
 transform_image = transforms.Compose([
     transforms.ToTensor(),
@@ -32,7 +36,7 @@ test_dataloader = DataLoader(test_data,
 
 if os.path.exists(model_pth_path):
     print("model.pth exists, loading model state...")
-    model = SingleHeadAttentionModel(NUM_CATEGORIES, dim_k=49).to(device)
+    model = SingleHeadAttentionModel(NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_k=EMBEDDING_DIM).to(device)
     model.load_state_dict(load('model.pth'))
 else:
     print("model.pth does not exist - please run run_model.py to create...")
