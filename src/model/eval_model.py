@@ -13,8 +13,11 @@ PATCH_SIZE = 7
 EMBEDDING_DIM = PATCH_SIZE * PATCH_SIZE
 NUM_PATCHES = 16
 BATCH_SIZE = 32
+# Query and key vectors are projected into a lower-dimensional space (i.e., dim_k < input_dim) for efficiency and generalization.
+DIMENSION_K = 32
 
 device = get_device()
+# TO RUN: make sure train_model() is commented out in run_model.py
 
 init_wandb()
 model_path = load_artifact_path("SingleHeadAttentionModel")
@@ -38,7 +41,7 @@ test_dataloader = DataLoader(test_data,
 
 if os.path.exists(model_path):
     print(f"{model_path} exists, loading model state...")
-    model = SingleHeadAttentionModel(NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_k=EMBEDDING_DIM).to(device)
+    model = SingleHeadAttentionModel(output_shape=NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_input=EMBEDDING_DIM, dim_k=DIMENSION_K).to(device)
     model.load_state_dict(load(model_path))
 else:
     print(f"{model_path} does not exist - please run run_model.py to create...")

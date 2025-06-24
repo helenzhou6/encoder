@@ -3,11 +3,11 @@ from torch import nn
 import torch
 
 class SingleHeadAttentionModel(nn.Module):
-    def __init__(self, output_shape, num_patches, dim_k=49):
+    def __init__(self, output_shape, num_patches, dim_input, dim_k):
         super().__init__()
-        self.query_proj = nn.Linear(49, dim_k, bias=False)
-        self.key_proj = nn.Linear(49, dim_k, bias=False)
-        self.val_proj = nn.Linear(49, dim_k, bias=False)
+        self.query_proj = nn.Linear(dim_input, dim_k, bias=False)
+        self.key_proj = nn.Linear(dim_input, dim_k, bias=False)
+        self.val_proj = nn.Linear(dim_input, dim_k, bias=False)
         self.dim_k = dim_k
         self.num_patches = num_patches
 
@@ -16,10 +16,16 @@ class SingleHeadAttentionModel(nn.Module):
         self.classifier = nn.Linear(dim_k, output_shape)
 
     def forward(self, x):
-        x = x + self.position_patch_embed
-        Q = self.query_proj(x)
-        K = self.key_proj(x)
-        V = self.val_proj(x)
+        # x: (batch_size, num_patches, dim_input)
+        Q = self.query_proj(x)  # (batch_size, num_patches, dim_k)
+        K = self.key_proj(x)    # (batch_size, num_patches, dim_k)
+        V = self.val_proj(x)    # (batch_size, num_patches, dim_k)
+
+        # Add positional embedding after projection
+        Q = Q + self.position_patch_embed # (batch_size, num_patches, dim_k)
+        K = K + self.position_patch_embed
+        V = V + self.position_patch_embed
+
         
         dot_product_keys_queries = torch.matmul(Q, K.transpose(-2, -1))
         sq_root_dim = (self.dim_k ** 0.5)
@@ -33,5 +39,5 @@ class SingleHeadAttentionModel(nn.Module):
         # TODO: REMOVE THE BELOW when we link it will the decoder   
         # Aggregate over patches: e.g., take mean or sum over num_patches dimension
         pooled_output = hidden_v_representation.mean(dim=1)  # (batch_size, dim_k)
-        logits = self.classifier(pooled_output) 
+        logits = self.classifier(pooled_output) # (batch_size, output_shape)
         return logits, normalised_attention

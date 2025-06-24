@@ -15,6 +15,7 @@ NUM_PATCHES = 16
 BATCH_SIZE = 32
 EPOCHS = 5
 LEARNING_RATE = 0.1
+DIMENSION_K = 32
 
 device = get_device()
 wandb_run = init_wandb()
@@ -43,7 +44,7 @@ train_dataloader = DataLoader(train_data,
 )
 
 NUM_CATEGORIES = len(train_data.classes)
-model = SingleHeadAttentionModel(output_shape=NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_k=EMBEDDING_DIM).to(device)
+model = SingleHeadAttentionModel(output_shape=NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_input=EMBEDDING_DIM, dim_k=DIMENSION_K).to(device)
 
 accuracy_fn = Accuracy(task = 'multiclass', num_classes=NUM_CATEGORIES).to(device)
 loss_fn = nn.CrossEntropyLoss()

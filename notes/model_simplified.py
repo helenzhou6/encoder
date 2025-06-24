@@ -36,6 +36,7 @@ class SingleHeadAttentionModel(nn.Module):
 
     def forward(self, x):
         # Add positional embedding (1, num_patches, dim_k) to patch embeddings - see above
+        # NOTE: To make dim_k dynamic, need to move x + self.position_patch_embed to Q = Q + self.position_patch_embed etc
         x = x + self.position_patch_embed # Shape is (batch_size, num_patches, dim_k)
         # Matrices
         Q = self.query_proj(x)  # Queries - shape (batch_size, num_patches, dim_k). Each row is query vector for a patch
