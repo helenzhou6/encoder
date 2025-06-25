@@ -2,6 +2,7 @@ data/
 model.pth
 wandb/
 artifacts/
+MNIST/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
