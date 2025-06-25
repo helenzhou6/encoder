@@ -15,3 +15,7 @@ Takes in 28 pixel x 28 pixel image and predicts the digit (0 to 9)
     - Run `wandb_login` in the terminal to enable wandb
     - This includes the Linear projection of flattened patches
 3. `eval_model.py` will evaluate the model and check the loss and accuracy.
+
+## How to run decoder 
+1. Run `multidigit_generator.py` and then `split_multidigit_dataset.py` to generate the datasets
+2. Then run `train_encoder_decoder.py` to run the model
