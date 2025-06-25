@@ -26,6 +26,7 @@ wandb_run = init_wandb()
 # -- Chop image into patches
 linear_proj = nn.Linear(PATCH_SIZE * PATCH_SIZE, INPUT_DIM)
 def patch_image(image): # image = [1, 28, 28]
+    assert image.shape == (1, 28, 28), f"Expected (1,28,28) but got {image.shape}"
     patches = image.unfold(1, PATCH_SIZE, PATCH_SIZE).unfold(2, PATCH_SIZE, PATCH_SIZE)
     patches = patches.contiguous().view(-1, PATCH_SIZE * PATCH_SIZE) 
     return linear_proj(patches)

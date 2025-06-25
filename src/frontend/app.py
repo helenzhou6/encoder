@@ -29,10 +29,9 @@ if 'text' not in st.session_state:
 def on_button_click():
     if canvas_result.image_data is not None:
         result = predict_digit_api(canvas_result.image_data)
-        if result.values() and len(result.values()) == 2:
-            predicted_digit = result.values()
-            st.session_state['text'] = f"Prediction made! 🤖 thinks it's {predicted_digit} and with {conf_percent:.1f}% confidence"
-            st.session_state['predicted_digit'] = predicted_digit
+        if result:
+            st.session_state['text'] = f"Prediction made! 🤖 thinks it's {result}"
+            st.session_state['predicted_digit'] = result
         else:
             st.session_state['text'] = f"Something went wrong, see logs.. {result}"
 
