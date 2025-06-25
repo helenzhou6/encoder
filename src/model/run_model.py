@@ -7,7 +7,7 @@ from torch import nn, optim, save
 
 from plot_attention import visualise_attention
 from utils import get_device, init_wandb, save_artifact
-from init_model import MultiHeadAttentionModel
+from init_model import AttentionModel
 
 PATCH_SIZE = 7
 EMBEDDING_DIM = PATCH_SIZE * PATCH_SIZE
@@ -16,7 +16,6 @@ BATCH_SIZE = 32
 EPOCHS = 5
 LEARNING_RATE = 0.1
 DIMENSION_K = 32
-NUM_HEADS = 2
 
 device = get_device()
 wandb_run = init_wandb()
@@ -45,7 +44,7 @@ train_dataloader = DataLoader(train_data,
 )
 
 NUM_CATEGORIES = len(train_data.classes)
-model = MultiHeadAttentionModel(output_shape=NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_input=EMBEDDING_DIM, dim_k=DIMENSION_K, num_heads=NUM_HEADS).to(device)
+model = AttentionModel(output_shape=NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_input=EMBEDDING_DIM, dim_k=DIMENSION_K).to(device)
 
 accuracy_fn = Accuracy(task = 'multiclass', num_classes=NUM_CATEGORIES).to(device)
 loss_fn = nn.CrossEntropyLoss()

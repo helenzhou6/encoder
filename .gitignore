@@ -3,6 +3,7 @@ model.pth
 wandb/
 artifacts/
 MNIST/
+attention_map.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
