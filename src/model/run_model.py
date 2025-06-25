@@ -7,13 +7,13 @@ from torch import nn, optim, save
 
 from plot_attention import visualise_attention
 from utils import get_device, init_wandb, save_artifact
-from init_model import AttentionModel
+from init_model import EncoderLayer
 
 PATCH_SIZE = 7
 EMBEDDING_DIM = PATCH_SIZE * PATCH_SIZE
 NUM_PATCHES = 16
 BATCH_SIZE = 32
-EPOCHS = 5
+EPOCHS = 1
 LEARNING_RATE = 0.1
 DIMENSION_K = 32
 
@@ -44,7 +44,7 @@ train_dataloader = DataLoader(train_data,
 )
 
 NUM_CATEGORIES = len(train_data.classes)
-model = AttentionModel(output_shape=NUM_CATEGORIES, num_patches=NUM_PATCHES, dim_input=EMBEDDING_DIM, dim_k=DIMENSION_K).to(device)
+model = EncoderLayer(output_shape=NUM_CATEGORIES, dim_input=EMBEDDING_DIM, dim_k=DIMENSION_K).to(device)
 
 accuracy_fn = Accuracy(task = 'multiclass', num_classes=NUM_CATEGORIES).to(device)
 loss_fn = nn.CrossEntropyLoss()
