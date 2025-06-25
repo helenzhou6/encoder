@@ -94,10 +94,10 @@ class LookerTransformer(torch.nn.Module):
         for enc in self.enc: token_emb = enc(token_emb)        # loop over the number of embedding blocks
         # select only the 1st token, the class token  - where all the learnings are 
         cls_out = token_emb[:, 0, :]                             # [B, dim_hidden]
-        final = self.classify(cls_out)                          # [B, output_shape]
+        logits = self.classify(cls_out)                          # [B, output_shape]
 
         # Since uses class token - no need to average pool across all patches
         # pooled_output = patch_emb.mean(dim=1)  # (batch_size, dim_k)
         # final = self.classify(pooled_output) # (batch_size, output_shape)
-        return final
+        return logits
     

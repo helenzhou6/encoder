@@ -8,9 +8,8 @@ def _predict_digit_using_model(tensor_digit, model, device):
     model.eval()
     with no_grad():
         input_tensor = tensor_digit.to(device)
-        predicted_digit = model(input_tensor)
-        result = predicted_digit.squeeze(0).argmax().item()
-        return result
+        logits = model(input_tensor)
+        return logits.argmax(dim=1).item()
 
 _transform_to_tensor = Compose([
     Grayscale(num_output_channels=1),
