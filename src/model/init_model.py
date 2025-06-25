@@ -26,26 +26,46 @@ class Attention(nn.Module):
         attention = self.drpout(attention)
         out = torch.matmul(attention, V)
         return self.out_proj(out)
-    
+
 # EncoderLayer - need FNN to apply nonlinear transformation to each patch embedding - so model can do more complex functions
 # -- works independently on each token
 # -- without FNN- would be doing a soft mixing of features, but not actually learning to transform or process those features individually.
+# ALSO: Two linear layers with a non-linearity in between let your network learn non-linear, complex transformations, which a single linear layer cannot do by itself.
+class FNN(torch.nn.Module):
+    def __init__(self, dim_input):
+        super().__init__()
+        self.one = torch.nn.Linear(dim_input, dim_input)
+        self.dropout = torch.nn.Dropout(0.1)
+        self.relu = torch.nn.ReLU(inplace=True)
+        self.two = torch.nn.Linear(dim_input, dim_input)
+
+    def forward(self, x):
+        x = self.one(x)
+        x = self.relu(x) # ReLU - introduce non-linearity
+        x = self.dropout(x) # Random dropout 10%
+        x = self.two(x)
+        return x
+
 class EncoderLayer(torch.nn.Module):
-    def __init__(self, output_shape, dim_input, dim_k):
+    def __init__(self, output_shape, dim_input, dim_k): # dim_input = main feature dimension, dim_k = dimension of Q & K
         super().__init__()
         self.attention = Attention(dim_input, dim_k)
+        self.ffn = FNN(dim_input)
         self.initial_normalisation = torch.nn.LayerNorm(dim_input)
-        self.final_normalisation = torch.nn.LayerNorm(dim_input) # 
+        self.final_normalisation = torch.nn.LayerNorm(dim_input)
 
         # TODO: REMOVE BELOW when we link it will the decoder
         self.classifier = nn.Linear(dim_input, output_shape)
 
     def forward(self, src):
         out = self.attention(src) # out = hidden_v
+        # Residual connection = let model carry forward original input + transformed versio
+        # -- Residual connections let each layer learn a residual function relative to its input, rather than a full new transformation.
+        # make it easier to train and help gradient flow backward (adding more layers make training worse & in backpropagation gradients can disappear)
         src = src + out
         src = self.initial_normalisation(src)
-        # out = self.ffn(src)
-        # src = src + out
+        out = self.ffn(src)
+        src = src + out
         src = self.final_normalisation(src)
         # return src
 
