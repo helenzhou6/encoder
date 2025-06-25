@@ -9,6 +9,7 @@ import argparse
 from utils import get_device, init_wandb, save_artifact
 from init_model_mulhd import MultiHeadEncoderModel
 
+# ONLY runs the MultiHeadEncoderModel (not the decoder)
 BATCH_SIZE = 32
 EPOCHS = 20
 LEARNING_RATE = 0.1
