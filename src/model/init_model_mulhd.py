@@ -31,7 +31,7 @@ class MultiHeadEncoderModel(nn.Module):
 
     def forward(self, x):
         if self.pos_embed_module is not None:
-            x = x + self.pos_embed_module()
+            x = x + self.pos_embed_module() 
         x = self.encoder_blocks(x)
         return x
         #pooled = x.mean(dim=1)

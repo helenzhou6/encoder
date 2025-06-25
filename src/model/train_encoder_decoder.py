@@ -8,7 +8,7 @@ from model.init_model_decoder import DigitTransformerDecoder, EncoderDecoderMode
 from model.init_model_mulhd import MultiHeadEncoderModel  # assuming encoder is defined here
 from utils import get_device
 import wandb
-from data.multidigit_dataset import MultiDigitDataset  # custom dataset
+from encoder.src.model.multidigit_dataset import MultiDigitDataset  # custom dataset
 from tqdm import tqdm
 
 # --- Config ---
