@@ -71,3 +71,6 @@ class SingleHeadAttentionModel(nn.Module):
         pooled_output = hidden_v_representation.mean(dim=1)  # (batch_size, dim_k)
         logits = self.classifier(pooled_output) 
         return logits, normalised_attention
+    
+# --> This is a simplified, self-contained attention block that outputs classification logits immediately (like a vision transformer head without stacking).
+# --> Not compared to mini Transformer Encoder model 

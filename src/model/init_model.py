@@ -15,7 +15,7 @@ class AttentionModel(nn.Module):
         self.out_proj = nn.Linear(dim_k, dim_input) # final projection
  
         # TODO: REMOVE BELOW when we link it will the decoder
-        self.classifier = nn.Linear(dim_k, output_shape)
+        self.classifier = nn.Linear(dim_input, output_shape)
 
     def forward(self, x):
         # Project to QKV and split into 3 tensors along last dimension
@@ -37,7 +37,7 @@ class AttentionModel(nn.Module):
         normalised_attention = torch.softmax(attention, dim=-1)
 
         hidden_v_representation = torch.matmul(normalised_attention, V)
-        # hidden_v_representation = self.out_proj(hidden_v_representation)
+        hidden_v_representation = self.out_proj(hidden_v_representation)
         # TODO: add output x W = H as last step
 
         # TODO: REMOVE THE BELOW when we link it will the decoder   
@@ -45,3 +45,5 @@ class AttentionModel(nn.Module):
         pooled_output = hidden_v_representation.mean(dim=1)  # (batch_size, dim_k)
         logits = self.classifier(pooled_output) # (batch_size, output_shape)
         return logits, normalised_attention
+
+
