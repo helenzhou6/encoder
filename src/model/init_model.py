@@ -4,6 +4,7 @@ import torch
 
 # Self-attention layer - captures relationships (i.e. how tokens - image patches - relate to each other)
 # Attention = weighted average of values -- linear in nature (lacks non-linear) and not apply complex transformations 
+# -- Note, this is single headed. Have multiple attention heads would look at the input from different perspectives (e.g. edges and shapes)
 class Attention(nn.Module):
     def __init__(self, dim_input, dim_k):
         super().__init__()
@@ -27,7 +28,7 @@ class Attention(nn.Module):
         out = torch.matmul(attention, V)
         return self.out_proj(out)
 
-# EncoderLayer - need FNN to apply nonlinear transformation to each patch embedding - so model can do more complex functions
+# FNN need to apply nonlinear transformation to each patch embedding - so model can do more complex functions
 # -- works independently on each token
 # -- without FNN- would be doing a soft mixing of features, but not actually learning to transform or process those features individually.
 # ALSO: Two linear layers with a non-linearity in between let your network learn non-linear, complex transformations, which a single linear layer cannot do by itself.
@@ -47,15 +48,12 @@ class FNN(torch.nn.Module):
         return x
 
 class EncoderLayer(torch.nn.Module):
-    def __init__(self, output_shape, dim_input, dim_k): # dim_input = main feature dimension, dim_k = dimension of Q & K
+    def __init__(self, dim_input, dim_k): # dim_input = main feature dimension, dim_k = dimension of Q & K
         super().__init__()
         self.attention = Attention(dim_input, dim_k)
         self.ffn = FNN(dim_input)
         self.initial_normalisation = torch.nn.LayerNorm(dim_input)
         self.final_normalisation = torch.nn.LayerNorm(dim_input)
-
-        # TODO: REMOVE BELOW when we link it will the decoder
-        self.classifier = nn.Linear(dim_input, output_shape)
 
     def forward(self, src):
         out = self.attention(src) # out = hidden_v
@@ -67,11 +65,38 @@ class EncoderLayer(torch.nn.Module):
         out = self.ffn(src)
         src = src + out
         src = self.final_normalisation(src)
-        # return src
+        return src
 
-        # TODO: REMOVE THE BELOW when we link it will the decoder   
+# Having multiple encoder layers (blocks) - applied attention + FNN logic to output of previous layer, stacking adds depth. High layers = more complex/gloval dependencies vs lower layers = simple/local patterns
+class LookerTransformer(torch.nn.Module):
+    def __init__(self, output_shape, dim_input, dim_hidden, dim_k, num_patches, num_encoder_blocks):  # <- input = 49, hidden = 128
+        super().__init__()
+        # self.cls = torch.nn.Parameter(torch.randn(1, 1, dim_hidden))           # [1, 1, dim_hidden]
+        self.embedding = torch.nn.Linear(dim_input, dim_hidden)                  # [dim_input → dim_hidden]
+        self.num_tokens = num_patches                                           # = num of patches + 1 class token
+        self.position_emb = torch.nn.Embedding(self.num_tokens, dim_hidden)    
+        self.register_buffer('rng', torch.arange(self.num_tokens)) # stores tensor as non-trainable buffer that isn't updated during training
+        self.enc = torch.nn.ModuleList([EncoderLayer(dim_hidden, dim_k) for _ in range(num_encoder_blocks)])
+        self.classify = torch.nn.Sequential(
+            torch.nn.LayerNorm(dim_hidden),
+            torch.nn.Linear(dim_hidden, output_shape)
+        )
+
+    def forward(self, x):
+        # batch_size = x.shape[0]                            # x: [B, num_patch, dim_input]
+        patch_emb = self.embedding(x)                      # [B, num_patch, dim_hidden]
+        # create a class token
+        # cls = self.cls.expand(batch_size, -1, -1)       # [B, 1, dim_hidden]
+        # hdn = torch.cat([cls, pch], dim=1)                 # [B, num_tokens, dim_hidden]
+        # hdn = hdn + self.position_emb(self.rng)         # [B, num_tokens, dim_hidden]
+        patch_emb = patch_emb + self.position_emb(self.rng)
+        # for enc in self.enc: hdn = enc(hdn)                # [B, num_tokens, dim_hidden]
+        for enc in self.enc: patch_emb = enc(patch_emb)
+        # cls_out = patch_emb[:, 0, :]                            # select only the 1st token, the class token [B, dim_hidden]
+        # final = self.classify(cls_out)                          # [B, output_shape]
+
         # Aggregate over patches: e.g., take mean or sum over num_patches dimension
-        pooled_output = src.mean(dim=1)  # (batch_size, dim_k)
-        logits = self.classifier(pooled_output) # (batch_size, output_shape)
-        return logits, src
-
+        pooled_output = patch_emb.mean(dim=1)  # (batch_size, dim_k)
+        final = self.classify(pooled_output) # (batch_size, output_shape)
+        return final
+    

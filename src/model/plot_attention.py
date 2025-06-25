@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import wandb
 import os
 
+# TODO: Look into this - doesn't always output a square
 def visualise_attention(normalised_attention, step):
     attention_matrix = normalised_attention[0]
     if attention_matrix.ndim == 3:

@@ -6,15 +6,8 @@ from torchmetrics import Accuracy
 from torch.utils.data import DataLoader
 
 from utils import get_device, load_artifact_path, init_wandb
-from init_model import EncoderLayer
-from run_model import NUM_CATEGORIES, patch_image
-
-PATCH_SIZE = 7
-EMBEDDING_DIM = PATCH_SIZE * PATCH_SIZE
-NUM_PATCHES = 16
-BATCH_SIZE = 32
-# Query and key vectors are projected into a lower-dimensional space (i.e., dim_k < input_dim) for efficiency and generalization.
-DIMENSION_K = 32
+from init_model import LookerTransformer
+from run_model import NUM_CATEGORIES, patch_image, NUM_PATCHES, INPUT_DIM, NUM_PATCHES, BATCH_SIZE, HIDDEN_DIM, DIMENSION_K, NUM_ENCODER_BLOCKS
 
 device = get_device()
 # TO RUN: make sure train_model() is commented out in run_model.py
@@ -40,7 +33,7 @@ test_dataloader = DataLoader(test_data,
 
 if os.path.exists(model_path):
     print(f"{model_path} exists, loading model state...")
-    model = EncoderLayer(output_shape=NUM_CATEGORIES, dim_input=EMBEDDING_DIM, dim_k=DIMENSION_K).to(device)
+    model = LookerTransformer(output_shape=NUM_CATEGORIES, dim_input=INPUT_DIM, dim_hidden=HIDDEN_DIM, dim_k=DIMENSION_K, num_patches=NUM_PATCHES, num_encoder_blocks=NUM_ENCODER_BLOCKS).to(device)
     model.load_state_dict(load(model_path))
 else:
     print(f"{model_path} does not exist - please run run_model.py to create...")
@@ -52,7 +45,7 @@ loss, acc = 0, 0
 model.eval()
 with inference_mode():
     for X, y in test_dataloader:
-        (y_pred, _) = model(X)
+        y_pred = model(X)
         loss += loss_fn(y_pred, y)
         acc += accuracy_fn(y_pred.argmax(dim=1), y)
     loss /= len(test_dataloader)
