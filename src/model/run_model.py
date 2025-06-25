@@ -19,12 +19,27 @@ device = get_device()
 wandb_run = init_wandb()
 
 # -- Chop image into patches
-linear_proj = nn.Linear(PATCH_SIZE * PATCH_SIZE, EMBEDDING_DIM)
 
-def patch_image(image): # image = [1, 28, 28]
-    patches = image.unfold(1, PATCH_SIZE, PATCH_SIZE).unfold(2, PATCH_SIZE, PATCH_SIZE)
-    patches = patches.contiguous().view(-1, PATCH_SIZE * PATCH_SIZE) 
-    return linear_proj(patches)
+linear_proj = nn.Linear(PATCH_SIZE * PATCH_SIZE, EMBEDDING_DIM)
+# row_embed: stores 4 vectors for the 4 patch rows, col_embed: stores 4 vectors for the 4 patch columns
+row_embed = nn.Embedding(4, EMBEDDING_DIM // 2)
+col_embed = nn.Embedding(4, EMBEDDING_DIM // 2)
+
+def patch_image(image):  # image = [1, 28, 28]
+    #splits the image into non-overlapping patches of size 7×7
+    patches = image.unfold(1, PATCH_SIZE, PATCH_SIZE).unfold(2, PATCH_SIZE, PATCH_SIZE) # [1, 4, 4, 7, 7]
+    patches = patches.contiguous().view(-1, PATCH_SIZE * PATCH_SIZE)
+    patch_embeddings = linear_proj(patches) #Each 49-element patch vector is passed through the linear_proj layer to produce an embedding
+    # patch_embeddings = [32, 16, 49] where 32 is batch size, 16 is number of patches, and 49 is embedding dimension
+    # 2D positional encoding for 4x4 = 16 patches
+    positions = torch.arange(16, device=patch_embeddings.device)
+    #Computes the row index and column index for each patch
+    rows = positions // 4
+    cols = positions % 4
+    pos_embed = torch.cat([row_embed(rows), col_embed(cols)], dim=1)
+
+    patch_embeddings = patch_embeddings + pos_embed
+    return patch_embeddings
 
 transform_image = transforms.Compose([
     transforms.ToTensor(),
@@ -58,7 +73,7 @@ def train_model():
         train_loss, train_acc = 0, 0
         # y = classification
         for _, (batch_images, actual_y) in enumerate(train_dataloader):
-            # batch_images is [32, 16, 49]
+            # batch_images is [32, 16, 49]git 
             model.train()
             (y_pred, _) = model(batch_images)
             loss = loss_fn(y_pred, actual_y)

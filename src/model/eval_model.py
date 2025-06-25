@@ -5,9 +5,10 @@ import torchvision.transforms as transforms
 from torchmetrics import Accuracy
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
+import wandb
 
 from utils import get_device
-from init_model import SingleHeadAttentionModel
+from init_model_mulhd import MultiHeadEncoderModel
 from run_model import NUM_CATEGORIES, patch_image
 
 device = get_device()
@@ -30,12 +31,21 @@ test_dataloader = DataLoader(test_data,
     shuffle=False
 )
 
-if os.path.exists(model_pth_path):
-    print("model.pth exists, loading model state...")
-    model = SingleHeadAttentionModel(NUM_CATEGORIES, dim_k=49).to(device)
-    model.load_state_dict(load('model.pth'))
-else:
-    print("model.pth does not exist - please run run_model.py to create...")
+# ----- Load Model from W&B -----
+wandb.init(
+    project="DigitFinder",
+    entity="week3-rebels",
+    job_type="validation"
+)
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = MultiHeadEncoderModel(NUM_CATEGORIES, dim_k=48).to(device)
+
+model_artifact = wandb.use_artifact(f"week3-rebels/DigitFinder/MultiHeadAttentionModel:v1", type="model")
+artifact_dir = model_artifact.download()
+model_path = os.path.join(artifact_dir, "week3-rebels/DigitFinder/MultiHeadAttentionModel:v1")
+model.eval()
+
 
 loss_fn = nn.CrossEntropyLoss()
 accuracy_fn = Accuracy(task = 'multiclass', num_classes=NUM_CATEGORIES).to(device)
