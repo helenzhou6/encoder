@@ -4,11 +4,11 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 import torch.optim as optim
 from torchmetrics import Accuracy
-from model.init_model_decoder import DigitTransformerDecoder, EncoderDecoderModel
-from model.init_model_mulhd import MultiHeadEncoderModel  # assuming encoder is defined here
+from model.init_decoder import DigitTransformerDecoder, EncoderDecoderModel
+from model.init_encoder import MultiHeadEncoderModel  # assuming encoder is defined here
 from utils import get_device
 import wandb
-from encoder.src.model.multidigit_dataset import MultiDigitDataset  # custom dataset
+from multidigit_dataset import MultiDigitDataset  # custom dataset
 from tqdm import tqdm
 
 # --- Config ---

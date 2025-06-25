@@ -7,7 +7,7 @@ from torch import nn, optim, save
 import wandb
 
 from utils import get_device, init_wandb, save_artifact
-from init_model import SingleHeadAttentionModel
+from notes.single_headatten_model import SingleHeadAttentionModel
 
 PATCH_SIZE = 7
 EMBEDDING_DIM = PATCH_SIZE * PATCH_SIZE
