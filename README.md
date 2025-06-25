@@ -21,9 +21,12 @@ Takes in 28 pixel x 28 pixel image and predicts the digit (0 to 9)
 ## To Do
 1. ✅ Add the positional embedding
 2. ✅ Make multiple encoder blocks
-3. Add decoder
-4. Train with multiple numbers
-5. Sweeps - check best hyperparams & also upload attention maps wandb
+3. Change code to be like Bes' - https://github.com/mlx-fac/vit
+4. Sweeps - check best hyperparams
+
+### Decoder bits
+4. Add decoder
+5. Train with multiple numbers
 6. Frontend / inference
 
 ## Design choices
