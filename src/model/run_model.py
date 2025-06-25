@@ -6,8 +6,8 @@ from torchmetrics import Accuracy
 from torch import nn, optim, save
 
 # from plot_attention import visualise_attention
-from src.model.utils import get_device, init_wandb, save_artifact
-from src.model.init_model import LookerTransformer
+from utils import get_device, init_wandb, save_artifact
+from init_model import LookerTransformer
 
 PATCH_SIZE = 7
 INPUT_DIM = PATCH_SIZE * PATCH_SIZE

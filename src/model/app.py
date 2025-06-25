@@ -1,7 +1,10 @@
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
+import torch
+from PIL import Image
 
-from call_api import predict_digit_api
+from inference import predict_digit
+
 
 st.title("Digit Classifier 🤖")
 st.markdown(
@@ -26,9 +29,14 @@ canvas_result = st_canvas(
 if 'text' not in st.session_state:
     st.session_state['text'] = "🤖 patiently awaits your beautiful drawing of a digit..."
 
+
 def on_button_click():
     if canvas_result.image_data is not None:
-        result = predict_digit_api(canvas_result.image_data)
+
+        image = Image.fromarray(canvas_result.image_data.astype("uint8"))  # Convert to PIL image
+        image = image.convert("L")  # Convert to grayscale
+
+        result = predict_digit(image)
         if result:
             st.session_state['text'] = f"Prediction made! 🤖 thinks it's {result}"
             st.session_state['predicted_digit'] = result
