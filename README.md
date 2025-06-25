@@ -20,7 +20,12 @@ Run `uv sync` download all dependencies needed to run project
 3. `eval_model.py` will evaluate the model and check the loss and accuracy.
 
 ## Streamlit Front end
-Then run the script: `streamlit run src/frontend/app.py` and it will create a localhost URL to view. 
+Then run the script: `streamlit run src/frontend/app.py` and it will create a localhost URL to view.
+
+### Model service/API
+The model has been trained on the MNIST dataset. The code ensures that the model is usable by ensuring the model loss is < 0.5 and model accuracy is > 90% when testing on the MNIST testing dataset.
+- To load the service locally, use `uv run uvicorn src.model.api:app`.
+    - This runs the backend on port 8000, to check it is up and running go to: http://localhost:8000/healthcheck to see a response.
 
 ## To Do
 1. ✅ Add the positional embedding
