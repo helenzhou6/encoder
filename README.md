@@ -20,8 +20,8 @@ Takes in 28 pixel x 28 pixel image and predicts the digit (0 to 9)
 
 ## To Do
 1. ✅ Add the positional embedding
-2. ✅ Make multiple encoder blocks
-3. Change code to be like Bes' - https://github.com/mlx-fac/vit
+2. ✅ Change code to be like Bes' - https://github.com/mlx-fac/vit
+3. Make multiple encoder blocks
 4. Sweeps - check best hyperparams
 
 ### Decoder bits

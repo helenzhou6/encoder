@@ -71,9 +71,10 @@ class EncoderLayer(torch.nn.Module):
 class LookerTransformer(torch.nn.Module):
     def __init__(self, output_shape, dim_input, dim_hidden, dim_k, num_patches, num_encoder_blocks):  # <- input = 49, hidden = 128
         super().__init__()
-        # self.cls = torch.nn.Parameter(torch.randn(1, 1, dim_hidden))           # [1, 1, dim_hidden]
+        # class token = extra token where all learnings get pooled (somehow it just knows)
+        self.class_token = torch.nn.Parameter(torch.randn(1, 1, dim_hidden))           # class token [1, 1, dim_hidden]
         self.embedding = torch.nn.Linear(dim_input, dim_hidden)                  # [dim_input → dim_hidden]
-        self.num_tokens = num_patches                                           # = num of patches + 1 class token
+        self.num_tokens = num_patches + 1                                           # = num of patches + 1 class token
         self.position_emb = torch.nn.Embedding(self.num_tokens, dim_hidden)    
         self.register_buffer('rng', torch.arange(self.num_tokens)) # stores tensor as non-trainable buffer that isn't updated during training
         self.enc = torch.nn.ModuleList([EncoderLayer(dim_hidden, dim_k) for _ in range(num_encoder_blocks)])
@@ -83,20 +84,20 @@ class LookerTransformer(torch.nn.Module):
         )
 
     def forward(self, x):
-        # batch_size = x.shape[0]                            # x: [B, num_patch, dim_input]
-        patch_emb = self.embedding(x)                      # [B, num_patch, dim_hidden]
+        batch_size = x.shape[0]                                         # x: [B, num_patch, dim_input]
+        patch_emb = self.embedding(x)                                # [B, num_patch, dim_hidden]
         # create a class token
-        # cls = self.cls.expand(batch_size, -1, -1)       # [B, 1, dim_hidden]
-        # hdn = torch.cat([cls, pch], dim=1)                 # [B, num_tokens, dim_hidden]
-        # hdn = hdn + self.position_emb(self.rng)         # [B, num_tokens, dim_hidden]
-        patch_emb = patch_emb + self.position_emb(self.rng)
-        # for enc in self.enc: hdn = enc(hdn)                # [B, num_tokens, dim_hidden]
-        for enc in self.enc: patch_emb = enc(patch_emb)
-        # cls_out = patch_emb[:, 0, :]                            # select only the 1st token, the class token [B, dim_hidden]
-        # final = self.classify(cls_out)                          # [B, output_shape]
+        class_token = self.class_token.expand(batch_size, -1, -1)      # [B, 1, dim_hidden]
+        token_emb = torch.cat([class_token, patch_emb], dim=1)        # [B, num_tokens, dim_hidden]
+        token_emb = token_emb + self.position_emb(self.rng)         # [B, num_tokens, dim_hidden]
+        # for enc in self.enc: hdn = enc(hdn)                   # [B, num_tokens, dim_hidden]
+        for enc in self.enc: token_emb = enc(token_emb)        # loop over the number of embedding blocks
+        # select only the 1st token, the class token  - where all the learnings are 
+        cls_out = token_emb[:, 0, :]                             # [B, dim_hidden]
+        final = self.classify(cls_out)                          # [B, output_shape]
 
-        # Aggregate over patches: e.g., take mean or sum over num_patches dimension
-        pooled_output = patch_emb.mean(dim=1)  # (batch_size, dim_k)
-        final = self.classify(pooled_output) # (batch_size, output_shape)
+        # Since uses class token - no need to average pool across all patches
+        # pooled_output = patch_emb.mean(dim=1)  # (batch_size, dim_k)
+        # final = self.classify(pooled_output) # (batch_size, output_shape)
         return final
     
