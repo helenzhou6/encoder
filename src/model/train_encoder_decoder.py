@@ -17,7 +17,8 @@ default_config = {
     "NUM_ENCODER_ATTHEADS": 4,
     "NUM_DECODER_BLOCKS": 6,
     "NUM_DECODER_ATTHEADS": 4,
-    "EMBEDDING_DIM": 96
+    "EMBEDDING_DIM": 96,
+    "PATCH_SIZE": 16
 }
 wandb.init(project="digit-transformer", config=default_config)
 config = wandb.config
@@ -30,12 +31,12 @@ ORG_PXL_SIZE = 96  # original image size
 MAX_SEQ_LEN = 6 # <start> max 4 digits (include <pad>) <eod> = total of 6
 OUTPUT_SIZE = 13  # digits 0-9 + <sos>, <eos>, <pad>
 
+# HYPERPARAMS running sweeps on
 EMBEDDING_DIM = config.EMBEDDING_DIM # dim_model = EMBEDDING_DIM - needs to be divisible by num of heads
-PATCH_SIZE = 16 # 6x6 patches of size 16x16 for 96x96 images
+PATCH_SIZE = config.PATCH_SIZE # 6x6 patches of size 16x16 for 96x96 images
 NUM_CUTS = int(ORG_PXL_SIZE/PATCH_SIZE)
 NUM_PATCHES = int(NUM_CUTS**2)  # 36 patches
 
-# HYPERPARAMS running sweeps on
 NUM_ENCODER_BLOCKS = config.NUM_ENCODER_BLOCKS
 NUM_ENCODER_ATTHEADS = config.NUM_ENCODER_ATTHEADS
 
