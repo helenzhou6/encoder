@@ -20,16 +20,14 @@ Takes in 28 pixel x 28 pixel image and predicts the digit (0 to 9)
 1. Run `multidigit_generator.py` and then `split_multidigit_dataset.py` to generate the datasets
 2. Then run `train_encoder_decoder.py` to run the modelAdd commentMore actions
 
-# To Dos
-1. [In progress] Change loss_fn to also ignore 11 token. Might also impact the accuracy (since later step)
-Tried but didn't work:
-```python
-pred_y = logits.view(-1, VOCAB_SIZE)
-actual_y = tgt_output.view(-1)
-loss = loss_fn(pred_y, actual_y) # shape: (N,) if reduction='none'
-mask = (actual_y != 11) & (actual_y != 12) # ignore <pad> and <eos>
-loss = (loss * mask).sum() / mask.sum()
-```
-2. Order of the prediction vs actual could be different order but still correct - adjust loss function to account for that
-3. Is it always confusing 1 and 9 etc - check
+## Running sweeps
+0. Make sure logged in - `export WANDB_API_KEY=<key>` if needed
+1. Initialise: `wandb sweep src/model/sweep_config.yaml`
+2. `wandb agent <copy and paste the yellow>`
+
+## To Dos
+1. Order of the prediction vs actual could be different order but still correct - adjust loss function to account for that
+2. Add other hyperparams e.g. dim_k
+3. For raw dataset being fed during training: add original MNIST/increase resolution of training dataset / fix cropped digits
+3. Inference - Is it always confusing 1 and 9 etc - check. Could also increase the width of the stroke
 4. [minor] Q: `pos_embed` - do we do it twice and if so can we remove it in one place?

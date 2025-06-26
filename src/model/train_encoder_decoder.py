@@ -1,37 +1,47 @@
 import torch
+import argparse
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 import torch.optim as optim
 from model.init_decoder import DigitTransformerDecoder, EncoderDecoderModel
 from model.init_encoder import MultiHeadEncoderModel  # assuming encoder is defined here
-from utils import get_device
+from utils import get_device, init_wandb
 import wandb
 from multidigit_dataset import MultiDigitDataset  # custom dataset
 from tqdm import tqdm
 
-# --- Config ---
-BATCH_SIZE = 64
-EPOCHS = 1
+default_config = {
+    "model": "EncoderDecoder",
+    "NUM_ENCODER_BLOCKS": 6,
+    "NUM_ENCODER_ATTHEADS": 4,
+    "NUM_DECODER_BLOCKS": 6,
+    "NUM_DECODER_ATTHEADS": 4
+}
+wandb.init(project="digit-transformer", config=default_config)
+config = wandb.config
+
 LEARNING_RATE = 0.0005
+BATCH_SIZE = 64
+EPOCHS = 20
 
 ORG_PXL_SIZE = 96  # original image size
+MAX_SEQ_LEN = 6 # <start> max 4 digits (include <pad>) <eod> = total of 6
+OUTPUT_SIZE = 13  # digits 0-9 + <sos>, <eos>, <pad>
+
+EMBEDDING_DIM = 96 # dim_model = EMBEDDING_DIM
 PATCH_SIZE = 16 # 6x6 patches of size 16x16 for 96x96 images
 NUM_CUTS = int(ORG_PXL_SIZE/PATCH_SIZE)
 NUM_PATCHES = int(NUM_CUTS**2)  # 36 patches
-EMBEDDING_DIM = 96 # dim_model = EMBEDDING_DIM
 
-MAX_SEQ_LEN = 6
-OUTPUT_SIZE = 13  # digits 0-9 + <sos>, <eos>, <pad>
+# HYPERPARAMS running sweeps on
+NUM_ENCODER_BLOCKS = config.NUM_ENCODER_BLOCKS
+NUM_ENCODER_ATTHEADS = config.NUM_ENCODER_ATTHEADS
 
-NUM_ENCODER_BLOCKS = 4
-NUM_ENCODER_ATTHEADS = 4
-
-NUM_DECODER_BLOCKS = 4
-NUM_DECODER_ATTHEADS = 4
+NUM_DECODER_BLOCKS = config.NUM_DECODER_BLOCKS
+NUM_DECODER_ATTHEADS = config.NUM_DECODER_ATTHEADS
 
 device = get_device()
-wandb.init(project="digit-transformer")
 
 # --- Positional patch encoder ---
 linear_proj = nn.Linear(PATCH_SIZE * PATCH_SIZE, EMBEDDING_DIM)
