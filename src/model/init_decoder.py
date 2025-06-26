@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import math
 
 class DecoderBlock(nn.Module):
     def __init__(self, dim_model, num_heads):

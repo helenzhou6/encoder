@@ -1,8 +1,7 @@
 import torch
-import argparse
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from torchvision import datasets, transforms
+from torchvision import transforms
 import torch.optim as optim
 from model.init_decoder import DigitTransformerDecoder, EncoderDecoderModel
 from model.init_encoder import MultiHeadEncoderModel  # assuming encoder is defined here
