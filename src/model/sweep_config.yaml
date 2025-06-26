@@ -13,3 +13,5 @@ parameters:
         values: [4, 6]
     NUM_DECODER_ATTHEADS:
         values: [4, 6]
+    EMBEDDING_DIM:
+        values: [48, 96, 144]
