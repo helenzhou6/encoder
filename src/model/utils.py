@@ -28,3 +28,8 @@ def save_artifact(model_name, model_description, file_extension='pt', type="mode
     )
     artifact.add_file(f"./data/{model_name}.{file_extension}")
     wandb.log_artifact(artifact)
+
+def load_artifact_path(artifact_name, version="latest", file_extension='pt'):
+    artifact = wandb.use_artifact(f"{artifact_name}:{version}")
+    directory = artifact.download()
+    return f"{directory}/{artifact_name}.{file_extension}"

@@ -6,7 +6,7 @@ from torchvision import datasets, transforms
 import torch.optim as optim
 from model.init_decoder import DigitTransformerDecoder, EncoderDecoderModel
 from model.init_encoder import MultiHeadEncoderModel  # assuming encoder is defined here
-from utils import get_device, init_wandb
+from utils import get_device, save_artifact
 import wandb
 from multidigit_dataset import MultiDigitDataset  # custom dataset
 from tqdm import tqdm
@@ -198,7 +198,8 @@ def train():
               f" | Val Loss: {val_loss:.3f} | Val Acc: {val_acc/val_tokens*100:.2f}%")
         scheduler.step()
         wandb.log({"learning_rate": scheduler.get_last_lr()[0]})
-    torch.save(model.state_dict(), "digit_transformer.pt")
+    torch.save(model.state_dict(), "data/digit_transformer.pt")
+    save_artifact("digit_transformer", "MultiHead Attention Encoder Decoder")
 
 if __name__ == "__main__":
     train()

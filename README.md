@@ -1,29 +1,24 @@
 # Encoder
-
-Create a model that is trained on the MNIST dataset
-Takes in 28 pixel x 28 pixel image and predicts the digit (0 to 9)
-
+Create a model that is trained on the MNIST dataset - that has been added all together into either 1, 2, 3 or 4 digits all on the same digit. The encoder-decoder will try and predict all the digits
 
 ## Pre-requisities 
 - Python 3.10
 - uv - install via https://github.com/astral-sh/uv
 - wandb log in details and be added to the project - https://wandb.ai/site
 
-## Code
-1. `uv sync` download all dependencies needed to run project
-2. Run `run_model.py` that will create the model, and train it. Also see wandb graphs. 
-    - Run `wandb_login` in the terminal to enable wandb
-    - This includes the Linear projection of flattened patches
-3. `eval_model.py` will evaluate the model and check the loss and accuracy.
-
-## How to run decoder 
-1. Run `multidigit_generator.py` and then `split_multidigit_dataset.py` to generate the datasets
-2. Then run `train_encoder_decoder.py` to run the modelAdd commentMore actions
+## How to run encoder - decoder 
+0. `uv sync` download all dependencies needed to run project
+1. Run `multidigit_generator.py` and then `split_multidigit_dataset.py` to generate the datasets (you might need to set `download=True` if you don't already have the MNIST dataset downloaded locally)
+2. Then run `train_encoder_decoder.py` to run the model
+    - Run `wandb_login` in the terminal to enable wandb, or `export WANDB_API_KEY=<key>` 
 
 ## Running sweeps
 0. Make sure logged in - `export WANDB_API_KEY=<key>` if needed
 1. Initialise: `wandb sweep src/model/sweep_config.yaml`
 2. `wandb agent <copy and paste the yellow>`
+
+## Running the frontend
+- Run `uv run streamlit run front_end.py`
 
 ## To Dos
 1. Order of the prediction vs actual could be different order but still correct - adjust loss function to account for that

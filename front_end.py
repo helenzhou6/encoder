@@ -1,13 +1,22 @@
 import ssl, certifi
+import wandb
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 import torch
 from torchvision import transforms
 from PIL import Image
+from model.utils import init_wandb, load_artifact_path
 
 ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=certifi.where())
 
 # --- Load Transformer Model ---
+wandb.init(
+        entity="week3-rebels",
+        project="digit-transformer"
+    )
+
+model_path = load_artifact_path("digit_transformer")
+
 @st.cache_resource
 def load_model():
     from src.model.init_decoder import EncoderDecoderModel
@@ -16,7 +25,7 @@ def load_model():
 
     # Match training config
     EMBEDDING_DIM = 96
-    NUM_ENCODER_BLOCKS = 4
+    NUM_ENCODER_BLOCKS = 6
     NUM_ATTENTION_HEADS = 4
     VOCAB_SIZE = 13
     SEQ_LEN = 6
@@ -27,7 +36,7 @@ def load_model():
                                       num_heads=NUM_ATTENTION_HEADS, num_layers=NUM_ENCODER_BLOCKS,
                                       max_len=SEQ_LEN)
     model = EncoderDecoderModel(encoder, decoder)
-    model.load_state_dict(torch.load("digit_transformer.pt", map_location="cpu"))
+    model.load_state_dict(torch.load(model_path, map_location="cpu"))
     model.eval()
     return model
 
