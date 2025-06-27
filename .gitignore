@@ -5,6 +5,7 @@ wandb/
 MNIST/
 artifacts/
 raw_data/
+*.pt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

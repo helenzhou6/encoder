@@ -11,7 +11,11 @@ from multidigit_dataset import MultiDigitDataset  # custom dataset
 from tqdm import tqdm
 from sweep_config import sweep_configuration
 
-default_config = {
+run_config = {
+    "project": "sweeps-on-encoder-decoder", # "digit-transformer" or "sweeps-on-encoder-decoder"
+    'run_type': 'sweep',  # 'sweep' or 'train' 
+}
+default_wandb_config = {
     "model": "EncoderDecoder",
     "NUM_ENCODER_BLOCKS": 4, #6
     "NUM_ENCODER_ATTHEADS": 4,
@@ -20,66 +24,59 @@ default_config = {
     "EMBEDDING_DIM": 24, #96
     "PATCH_SIZE": 4 #16
 }
-run_config = {
-    "project": "sweeps-on-encoder-decoder", # "digit-transformer" or "sweeps-on-encoder-decoder"
-    'run_type': 'sweep',  # 'sweep' or 'train' 
-}
-wandb.init(project=run_config["project"], config=default_config)
-config = wandb.config
-
-LEARNING_RATE = 0.0005
-BATCH_SIZE = 32 #64
-EPOCHS = 30
-
-ORG_PXL_SIZE = 96  # original image size
-MAX_SEQ_LEN = 6 # <start> max 4 digits (include <pad>) <eod> = total of 6
-OUTPUT_SIZE = 13  # digits 0-9 + <sos>, <eos>, <pad>
-
-# HYPERPARAMS running sweeps on
-EMBEDDING_DIM = config.EMBEDDING_DIM # dim_model = EMBEDDING_DIM - needs to be divisible by num of heads
-PATCH_SIZE = config.PATCH_SIZE # 6x6 patches of size 16x16 for 96x96 images
-NUM_CUTS = int(ORG_PXL_SIZE/PATCH_SIZE)
-NUM_PATCHES = int(NUM_CUTS**2)  # 36 patches
-
-NUM_ENCODER_BLOCKS = config.NUM_ENCODER_BLOCKS
-NUM_ENCODER_ATTHEADS = config.NUM_ENCODER_ATTHEADS
-
-NUM_DECODER_BLOCKS = config.NUM_DECODER_BLOCKS
-NUM_DECODER_ATTHEADS = config.NUM_DECODER_ATTHEADS
-
-device = get_device()
-
-
-
-transform = transforms.Compose([
-    transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1)),
-    transforms.ToTensor()
-])
-
-
-
-# --- Dataset ---
-train_data = MultiDigitDataset(data_dir="data/multidigit", split="train")
-val_data = MultiDigitDataset(data_dir="data/multidigit", split="val")
-train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
-val_loader = DataLoader(val_data, batch_size=BATCH_SIZE)
-
-# --- Model ---
-encoder = MultiHeadEncoderModel(num_classes=10, dim_k=EMBEDDING_DIM, num_heads=NUM_ENCODER_ATTHEADS, num_blocks=NUM_ENCODER_BLOCKS)
-decoder = DigitTransformerDecoder(
-    vocab_size=OUTPUT_SIZE,
-    dim_model=EMBEDDING_DIM,
-    num_heads=NUM_DECODER_ATTHEADS,
-    num_layers=NUM_DECODER_BLOCKS,
-    max_len=MAX_SEQ_LEN
-)
-model = EncoderDecoderModel(encoder, decoder).to(device)
-
-optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-loss_fn = nn.CrossEntropyLoss(ignore_index=12)  # ignore <pad> token
 
 # --- Training loop ---
 def train():
+    wandb.init(project=run_config["project"], config=default_wandb_config)
+    config = wandb.config
+
+    LEARNING_RATE = 0.0005
+    BATCH_SIZE = 32 #64
+    EPOCHS = 30
+
+    ORG_PXL_SIZE = 96  # original image size
+    MAX_SEQ_LEN = 6 # <start> max 4 digits (include <pad>) <eod> = total of 6
+    OUTPUT_SIZE = 13  # digits 0-9 + <sos>, <eos>, <pad>
+
+    # HYPERPARAMS running sweeps on
+    EMBEDDING_DIM = config.EMBEDDING_DIM # dim_model = EMBEDDING_DIM - needs to be divisible by num of heads
+    PATCH_SIZE = config.PATCH_SIZE # 6x6 patches of size 16x16 for 96x96 images
+    NUM_CUTS = int(ORG_PXL_SIZE/PATCH_SIZE)
+    NUM_PATCHES = int(NUM_CUTS**2)  # 36 patches
+
+    NUM_ENCODER_BLOCKS = config.NUM_ENCODER_BLOCKS
+    NUM_ENCODER_ATTHEADS = config.NUM_ENCODER_ATTHEADS
+
+    NUM_DECODER_BLOCKS = config.NUM_DECODER_BLOCKS
+    NUM_DECODER_ATTHEADS = config.NUM_DECODER_ATTHEADS
+
+    device = get_device()
+
+    transform = transforms.Compose([
+        transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1)),
+        transforms.ToTensor()
+    ])
+
+    # --- Dataset ---
+    train_data = MultiDigitDataset(data_dir="data/multidigit", split="train")
+    val_data = MultiDigitDataset(data_dir="data/multidigit", split="val")
+    train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
+    val_loader = DataLoader(val_data, batch_size=BATCH_SIZE)
+
+    # --- Model ---
+    encoder = MultiHeadEncoderModel(num_classes=10, dim_k=EMBEDDING_DIM, num_heads=NUM_ENCODER_ATTHEADS, num_blocks=NUM_ENCODER_BLOCKS)
+    decoder = DigitTransformerDecoder(
+        vocab_size=OUTPUT_SIZE,
+        dim_model=EMBEDDING_DIM,
+        num_heads=NUM_DECODER_ATTHEADS,
+        num_layers=NUM_DECODER_BLOCKS,
+        max_len=MAX_SEQ_LEN
+    )
+    model = EncoderDecoderModel(encoder, decoder).to(device)
+
+    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    loss_fn = nn.CrossEntropyLoss(ignore_index=12)  # ignore <pad> token
+
     model.train()
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     for epoch in range(EPOCHS):
@@ -201,15 +198,15 @@ def train():
     except Exception as e:
         print(f"[wandb finish failed] {e}")
 
-if run_config["run_type"] == "sweep":
-    sweep_id = wandb.sweep(sweep=sweep_configuration, project=run_config["project"])
-    wandb.agent(
-        sweep_id=sweep_id,
-        function=train,
-        project=run_config['project'],
-        count=2,
-    )
-
 
 if __name__ == "__main__":
-    train()
+    if run_config["run_type"] == "sweep":
+        sweep_id = wandb.sweep(sweep=sweep_configuration, project=run_config["project"])
+        wandb.agent(
+            sweep_id=sweep_id,
+            function=train,
+            project=run_config['project'],
+            count=2,
+        )
+    elif run_config["run_type"] == "train":
+        train()
