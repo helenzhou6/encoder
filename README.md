@@ -1,7 +1,7 @@
 # Encoder
 
 Create a model that is trained on the MNIST dataset.
-Takes in 28 pixel x 28 pixel image and predicts the digit (0 to 9). It also links it up with the frontend where it will 
+Takes in 28 pixel x 28 pixel image and predicts the digit (0 to 9). It also links it up with the frontend where it will do an inference.
 
 ![Example of it working](https://github.com/user-attachments/assets/d30e8ef0-3739-4d52-9b7a-c5849c75038b)
 
