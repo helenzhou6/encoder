@@ -21,8 +21,8 @@ default_config = {
     "PATCH_SIZE": 4 #16
 }
 run_config = {
-    "project": "digit-transformer", # "digit-transformer" or "sweeps-on-encoder-decoder"
-    'run_type': 'train',  # 'sweep' or 'train' 
+    "project": "sweeps-on-encoder-decoder", # "digit-transformer" or "sweeps-on-encoder-decoder"
+    'run_type': 'sweep',  # 'sweep' or 'train' 
 }
 wandb.init(project=run_config["project"], config=default_config)
 config = wandb.config
@@ -97,9 +97,9 @@ def train():
 
             loss.backward()
 
-            for name, param in model.named_parameters():
-                if param.grad is not None:
-                    wandb.log({f"grad_norm/{name}": param.grad.norm().item()})
+            #for name, param in model.named_parameters():
+            #    if param.grad is not None:
+            #        wandb.log({f"grad_norm/{name}": param.grad.norm().item()})
 
             optimizer.step()
 
@@ -187,8 +187,14 @@ def train():
               f" | Val Loss: {val_loss:.3f} | Val Acc: {val_acc/val_tokens*100:.2f}%")
         scheduler.step()
         wandb.log({"learning_rate": scheduler.get_last_lr()[0]})
-    torch.save(model.state_dict(), "digit_transformer3.pt")
-    save_artifact("digit_transformer3", "MultiHead Attention Encoder Decoder")
+    # Save locally
+    model_path = "sweep_transformer.pt"
+    torch.save(model.state_dict(), model_path)
+
+    # Log to wandb as an artifact
+    artifact = wandb.Artifact("sweep_transformer", type="model")
+    artifact.add_file(model_path)
+    wandb.log_artifact(artifact)
 
     try:
         wandb.finish()
