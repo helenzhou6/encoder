@@ -9,13 +9,13 @@ This is with a model that for evaluation had a loss of 0.08 & accuracy of 97%
 
 ## Architecture
 
-This created the encoder architecture:
+Instead of using the CNN architecture, it is based using the Encoder architecture only. 
 
 ![encoder architecture](https://github.com/user-attachments/assets/a15de2f9-f256-4c48-b0e7-5b67b10b9c1c)
 
-It's based on the 'Attention is all you need' 2017 paper, where it only uses the encoder part (the left hand side of their architecture diagram), and takes the output and finally puts it in the classifier.
+This is inspired by the 'Attention is all you need' 2017 paper, but it only uses the encoder part (the left hand side of their architecture diagram) without the decoder. It takes the output of the Encoder and puts it through a Linear layer classifier to output a digit (this is removed for the Encoder Decoder).
 
-This uses a single headed attention.
+It uses a single headed attention.
 To see multi headed attention, see commit: https://github.com/helenzhou6/encoder/blob/85fe095765a8b26f02e6f0f7774fa3f1b64e3d65/src/model/init_model.py
 And also here: https://github.com/besarthoxhaj/attention/blob/main/03_multihead_attention.py
 
