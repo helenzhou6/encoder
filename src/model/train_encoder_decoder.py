@@ -47,6 +47,8 @@ def train():
     NUM_DECODER_ATTHEADS = 4
 
     device = get_device()
+    def get_device():
+        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     transform = transforms.Compose([
         transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1)),

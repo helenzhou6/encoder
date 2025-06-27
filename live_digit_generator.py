@@ -7,7 +7,7 @@ from torchvision.transforms import ToPILImage
 import os
 
 # --- Config ---
-MNIST_PATH = "./.data"
+MNIST_PATH = "./raw_data"
 CANVAS_SIZE = 96
 DISPLAY_SCALE = 4
 DIGIT_SIZE = 28
@@ -71,7 +71,7 @@ if st.session_state.generated_image:
 
         # Preprocess: augment, resize and ToTensor
         tf = transforms.Compose([
-            transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1)),
+            #transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1)),
             transforms.Resize((96, 96)),
             transforms.ToTensor()
         ])
