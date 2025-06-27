@@ -64,7 +64,6 @@ def preprocess_canvas_image(img_data):
     gray = Image.fromarray(rgb).convert('L')
     gray = gray.resize((96, 96), Image.LANCZOS)
     tf = transforms.Compose([
-        transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1)),
         transforms.ToTensor()
     ])
     return tf(gray)
