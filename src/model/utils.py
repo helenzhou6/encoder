@@ -1,7 +1,9 @@
 import wandb
+import torch
+
 
 def get_device():
-    return "cpu"
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def init_wandb(config={}):
     default_config = {
