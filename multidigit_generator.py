@@ -21,7 +21,7 @@ os.makedirs(f"{OUTPUT_PATH}/images", exist_ok=True)
 os.makedirs(f"{OUTPUT_PATH}/labels", exist_ok=True)
 
 # --- Load MNIST dataset ---
-mnist = datasets.MNIST(root=MNIST_PATH, train=(DIGIT_DATASET_SPLIT=='training'), download=False)
+mnist = datasets.MNIST(root=MNIST_PATH, train=(DIGIT_DATASET_SPLIT=='training'), download=True)
 to_pil = ToPILImage()
 to_tensor = ToTensor()
 
