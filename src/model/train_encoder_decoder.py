@@ -9,22 +9,27 @@ from utils import get_device, save_artifact
 import wandb
 from multidigit_dataset import MultiDigitDataset  # custom dataset
 from tqdm import tqdm
+from sweep_config import sweep_configuration
 
 default_config = {
     "model": "EncoderDecoder",
-    "NUM_ENCODER_BLOCKS": 6,
+    "NUM_ENCODER_BLOCKS": 4, #6
     "NUM_ENCODER_ATTHEADS": 4,
-    "NUM_DECODER_BLOCKS": 6,
+    "NUM_DECODER_BLOCKS": 4, #6
     "NUM_DECODER_ATTHEADS": 4,
-    "EMBEDDING_DIM": 96,
-    "PATCH_SIZE": 16
+    "EMBEDDING_DIM": 24, #96
+    "PATCH_SIZE": 4 #16
 }
-wandb.init(project="digit-transformer", config=default_config)
+run_config = {
+    "project": "digit-transformer", # "digit-transformer" or "sweeps-on-encoder-decoder"
+    'run_type': 'train',  # 'sweep' or 'train' 
+}
+wandb.init(project=run_config["project"], config=default_config)
 config = wandb.config
 
 LEARNING_RATE = 0.0005
-BATCH_SIZE = 64
-EPOCHS = 20
+BATCH_SIZE = 32 #64
+EPOCHS = 30
 
 ORG_PXL_SIZE = 96  # original image size
 MAX_SEQ_LEN = 6 # <start> max 4 digits (include <pad>) <eod> = total of 6
@@ -44,10 +49,6 @@ NUM_DECODER_ATTHEADS = config.NUM_DECODER_ATTHEADS
 
 device = get_device()
 
-# --- Positional patch encoder ---
-linear_proj = nn.Linear(PATCH_SIZE * PATCH_SIZE, EMBEDDING_DIM)
-row_embed = nn.Embedding(NUM_CUTS, EMBEDDING_DIM // 2)
-col_embed = nn.Embedding(NUM_CUTS, EMBEDDING_DIM // 2)
 
 
 transform = transforms.Compose([
@@ -55,20 +56,6 @@ transform = transforms.Compose([
     transforms.ToTensor()
 ])
 
-def patch_image_tensor(img_tensor):
-    patches = img_tensor.unfold(2, PATCH_SIZE, PATCH_SIZE).unfold(3, PATCH_SIZE, PATCH_SIZE)  # (B, channel, division, division, patch_width, patch_height)
-    patches = patches.contiguous().view(img_tensor.size(0), NUM_PATCHES, -1)  # (B, NUM_PATCHES, patch_size * patch_size)
-    
-    patch_embeddings = linear_proj(patches)  # (B, NUM_PATCHES, EMBEDDING_DIM)
-
-    # Add positional encoding
-    positions = torch.arange(NUM_PATCHES, device=img_tensor.device)
-    rows = positions // NUM_CUTS
-    cols = positions % NUM_CUTS
-    pos_embed = torch.cat([row_embed(rows), col_embed(cols)], dim=1)  # (NUM_PATCHES, EMBEDDING_DIM)
-    patch_embeddings = patch_embeddings + pos_embed.unsqueeze(0)  # (1, NUM_PATCHES, EMBEDDING_DIM)
-
-    return patch_embeddings
 
 
 # --- Dataset ---
@@ -99,7 +86,7 @@ def train():
         total_loss, total_acc, total_tokens = 0, 0, 0
         total_digit_correct_train, total_digit_tokens_train = 0, 0
         for batch_imgs, tgt_input, tgt_output in tqdm(train_loader, desc=f"Epoch {epoch+1} [Train]", leave=False):
-            batch_imgs = patch_image_tensor(batch_imgs.to(device))
+            batch_imgs = encoder.patch_image_tensor(batch_imgs.to(device))
             tgt_input = tgt_input.to(device)
             tgt_output = tgt_output.to(device)
 
@@ -110,9 +97,9 @@ def train():
 
             loss.backward()
 
-            #for name, param in model.named_parameters():
-            #    if param.grad is not None:
-            #        wandb.log({f"grad_norm/{name}": param.grad.norm().item()})
+            for name, param in model.named_parameters():
+                if param.grad is not None:
+                    wandb.log({f"grad_norm/{name}": param.grad.norm().item()})
 
             optimizer.step()
 
@@ -146,7 +133,7 @@ def train():
         total_digit_correct_val, total_digit_tokens_val = 0, 0
         with torch.no_grad():
             for batch_imgs, tgt_input, tgt_output in tqdm(val_loader, desc=f"Epoch {epoch+1} [Val]", leave=False):
-                batch_imgs = patch_image_tensor(batch_imgs.to(device))
+                batch_imgs = encoder.patch_image_tensor(batch_imgs.to(device))
                 tgt_input = tgt_input.to(device)
                 tgt_output = tgt_output.to(device)
 
@@ -178,16 +165,19 @@ def train():
                 total_digit_tokens_val += digit_total
 
 
-            wandb.log({
-                "train_loss": total_loss / len(train_data),
-                "train_acc": total_acc / total_tokens,
-                "val_loss": val_loss / len(val_data),
-                "val_acc": val_acc / val_tokens,
-                "digit_train_acc": total_digit_correct_train / total_digit_tokens_train,
-                "digit_val_acc": total_digit_correct_val / total_digit_tokens_val,
-            })
+            try:
+                wandb.log({
+                    "train_loss": total_loss / len(train_data),
+                    "train_acc": total_acc / total_tokens,
+                    "val_loss": val_loss / len(val_data),
+                    "val_acc": val_acc / val_tokens,
+                    "digit_train_acc": total_digit_correct_train / total_digit_tokens_train,
+                    "digit_val_acc": total_digit_correct_val / total_digit_tokens_val,
+                })
+            except Exception as e:
+                print(f"[wandb log failed] {e}")
             # Visualize a few predictions
-            if epoch % 1 == 0:
+            if epoch % 5 == 0:
                 print("\nSample predictions:")
                 for i in range(min(3, preds.size(0))):
                     print("Predicted:", preds[i].tolist())
@@ -197,8 +187,23 @@ def train():
               f" | Val Loss: {val_loss:.3f} | Val Acc: {val_acc/val_tokens*100:.2f}%")
         scheduler.step()
         wandb.log({"learning_rate": scheduler.get_last_lr()[0]})
-    torch.save(model.state_dict(), "data/digit_transformer.pt")
-    save_artifact("digit_transformer", "MultiHead Attention Encoder Decoder")
+    torch.save(model.state_dict(), "digit_transformer3.pt")
+    save_artifact("digit_transformer3", "MultiHead Attention Encoder Decoder")
+
+    try:
+        wandb.finish()
+    except Exception as e:
+        print(f"[wandb finish failed] {e}")
+
+if run_config["run_type"] == "sweep":
+    sweep_id = wandb.sweep(sweep=sweep_configuration, project=run_config["project"])
+    wandb.agent(
+        sweep_id=sweep_id,
+        function=train,
+        project=run_config['project'],
+        count=2,
+    )
+
 
 if __name__ == "__main__":
     train()
