@@ -18,11 +18,7 @@ run_config = {
 default_wandb_config = {
     "model": "EncoderDecoder",
     "NUM_ENCODER_BLOCKS": 4, #6
-    "NUM_ENCODER_ATTHEADS": 4,
-    "NUM_DECODER_BLOCKS": 4, #6
-    "NUM_DECODER_ATTHEADS": 4,
     "EMBEDDING_DIM": 24, #96
-    "PATCH_SIZE": 4 #16
 }
 
 # --- Training loop ---
@@ -40,15 +36,15 @@ def train():
 
     # HYPERPARAMS running sweeps on
     EMBEDDING_DIM = config.EMBEDDING_DIM # dim_model = EMBEDDING_DIM - needs to be divisible by num of heads
-    PATCH_SIZE = config.PATCH_SIZE # 6x6 patches of size 16x16 for 96x96 images
+    PATCH_SIZE = 4 # 6x6 patches of size 16x16 for 96x96 images
     NUM_CUTS = int(ORG_PXL_SIZE/PATCH_SIZE)
     NUM_PATCHES = int(NUM_CUTS**2)  # 36 patches
 
     NUM_ENCODER_BLOCKS = config.NUM_ENCODER_BLOCKS
-    NUM_ENCODER_ATTHEADS = config.NUM_ENCODER_ATTHEADS
+    NUM_ENCODER_ATTHEADS = 4
 
-    NUM_DECODER_BLOCKS = config.NUM_DECODER_BLOCKS
-    NUM_DECODER_ATTHEADS = config.NUM_DECODER_ATTHEADS
+    NUM_DECODER_BLOCKS = 4
+    NUM_DECODER_ATTHEADS = 4
 
     device = get_device()
 
@@ -206,7 +202,7 @@ if __name__ == "__main__":
             sweep_id=sweep_id,
             function=train,
             project=run_config['project'],
-            count=2,
+            count=4,
         )
     elif run_config["run_type"] == "train":
         train()

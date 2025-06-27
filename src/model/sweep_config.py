@@ -9,20 +9,8 @@ sweep_configuration = {
         "NUM_ENCODER_BLOCKS": {
             "values": [4,6]
         },
-        "NUM_ENCODER_ATTHEADS": {
-            "values": [4,6]
-        },
-        "NUM_DECODER_BLOCKS": {
-            "values": [4,6]
-        },
-        "NUM_DECODER_ATTHEADS": {
-            "values": [4,6]
-        },
         "EMBEDDING_DIM": {
-            "values": [24, 48, 96]
-        },
-        "PATCH_SIZE": {
-            "values": [4, 8, 16]
+            "values": [24,96]
         }
     }
 }
