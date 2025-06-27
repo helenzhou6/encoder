@@ -4,6 +4,8 @@ wandb/
 artifacts/
 MNIST/
 attention_map.png
+.data/
+*.pt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
