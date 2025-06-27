@@ -1,6 +1,13 @@
 # Decoder Encoder i.e. Transformer
 Creates a Transformer model that is trained on the MNIST dataset - that has been added all together into either 1, 2, 3 or 4 digits all on the same digit. The encoder-decoder will try and predict all the digits
 
+Example of it working at inference:
+![Frontend](https://github.com/user-attachments/assets/738128de-659d-4a81-aa0f-24527c39147f)
+
+![Frontend example 1](https://github.com/user-attachments/assets/30e6847d-74b0-47be-95d8-a7c94d0cf456)
+
+![Frontend example 2](https://github.com/user-attachments/assets/4f30d8b5-f7d5-49d3-b716-39487b1a4604)
+
 ## Architecture
 This uses the transformer architecture (as defined by the Attention is All you need 2017 paper). This is taken from there:
 ![Architecture](https://github.com/user-attachments/assets/735a455a-810f-4ced-a1ca-d3200f4aa65b)
