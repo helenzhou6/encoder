@@ -19,7 +19,7 @@ It uses a single headed attention.
 To see multi headed attention, see commit: https://github.com/helenzhou6/encoder/blob/85fe095765a8b26f02e6f0f7774fa3f1b64e3d65/src/model/init_model.py
 And also here: https://github.com/besarthoxhaj/attention/blob/main/03_multihead_attention.py
 
-To see the Encoder Decoder -- See the `espe` branch (see pull request). I might clone this into a separate repo later
+To see the Encoder Decoder -- See the `espe` branch (see pull request). This has been cloned into the repo: https://github.com/helenzhou6/decoder-encoder
 
 ## Pre-requisities 
 - Python 3.10
