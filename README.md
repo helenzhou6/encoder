@@ -20,6 +20,8 @@ i.e. it consists of:
 3. **Decoder** that has: multiple decoder layer/blocks that each has a multi headed self attention (with masking of the future) + multi headed cross attention (that takes the input from the Encoder) + FNN (a linear layer, ReLU and linear layer)
 4. **Classification**: The final layer that does the generation of the sequence of digits it thinks has been drawn at inference (during training, it will compare with the actual sequence to learn)
 
+Also see presentation PDF in notes.
+
 ## Pre-requisities 
 - Python 3.10
 - uv - install via https://github.com/astral-sh/uv
